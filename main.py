@@ -1,3 +1,4 @@
+# Import necessary libraries
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -116,8 +117,9 @@ def main():
     st.plotly_chart(fig)
 
     # Performance Matrix and Explanations
+    st.subheader("Performance Matrix and Advantages of AI-based Asset Health Forecasting")
 
-    st.subheader("Performance Matrix")
+    # Confusion Matrix, Accuracy, and Classification Report
     y_true = Y.flatten()
     y_pred = predictions_original.flatten() > threshold
     cm = confusion_matrix(y_true, y_pred)
@@ -127,6 +129,23 @@ def main():
     st.write(f"Confusion Matrix:\n{cm}")
     st.write(f"Accuracy: {accuracy}")
     st.write(f"Classification Report:\n{classification_rep}")
+
+    # Explain the advantages of AI-based asset health forecasting
+    st.subheader("Advantages of AI-based Asset Health Forecasting:")
+    st.write("1. **Early Detection:** AI models can detect subtle patterns indicative of asset degradation before"
+             " visible signs appear, allowing for early intervention and maintenance.")
+
+    st.write("2. **Data-Driven Insights:** AI algorithms analyze large datasets, providing data-driven insights into"
+             " asset performance and health based on historical patterns and real-time data.")
+
+    st.write("3. **Predictive Maintenance:** AI can predict when equipment is likely to fail, enabling proactive"
+             " maintenance schedules and minimizing downtime.")
+
+    st.write("4. **Cost Savings:** Predictive maintenance and early detection of issues lead to cost savings by"
+             " preventing major breakdowns and reducing unplanned downtime.")
+
+    st.write("5. **Continuous Improvement:** AI models can be continually trained and improved with new data, adapting"
+             " to changing conditions and improving accuracy over time.")
 
 if __name__ == "__main__":
     main()
