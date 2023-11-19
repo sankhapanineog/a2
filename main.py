@@ -37,6 +37,9 @@ def train_neural_network(X, Y, learning_rate, num_iterations):
     input_size = X.shape[0]
     parameters = initialize_parameters(input_size)
 
+    # List to store cost during training for visualization
+    cost_history = []
+
     for i in range(num_iterations):
         A = forward_propagation(X, parameters)
         cost = mean_squared_error(Y, A)
@@ -48,8 +51,16 @@ def train_neural_network(X, Y, learning_rate, num_iterations):
         parameters['W'] -= learning_rate * dW
         parameters['b'] -= learning_rate * db
 
+        cost_history.append(cost)  # Append the cost to the history list
+
         if i % 100 == 0:
             st.write(f"Cost after iteration {i}: {cost}")
+
+    # Plot the cost during training
+    st.subheader("Cost During Training")
+    iterations = np.arange(0, num_iterations, 100)  # Adjusted to match iteration steps
+    fig_cost = px.line(x=iterations, y=cost_history[::100], labels={'x': 'Iteration', 'y': 'Cost'})
+    st.plotly_chart(fig_cost)
 
     return parameters
 
