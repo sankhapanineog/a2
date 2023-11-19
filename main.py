@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 
 # Activation function (sigmoid)
 def sigmoid(x):
@@ -68,50 +69,47 @@ def generate_random_data():
 def main():
     st.title("Group 7: Neural Network Asset Health Prediction App")
 
-    # Generate random data for three days
-    data = generate_random_data()
+    # Option for CSV Upload
+    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
-    # Sidebar - Neural Network Configuration
-    st.sidebar.header("Neural Network Configuration")
-    learning_rate = st.sidebar.slider("Learning Rate", min_value=0.01, max_value=0.5, value=0.1, step=0.01)
-    num_iterations = st.sidebar.slider("Number of Iterations", min_value=100, max_value=5000, value=1000, step=100)
-    threshold = st.sidebar.slider("Threshold for Health Prediction", min_value=0.1, max_value=0.9, value=0.5, step=0.1)
+    if uploaded_file is not None:
+        # Auto-detect if the uploaded CSV file contains time-series data
+        data = pd.read_csv(uploaded_file)
+        if 'timestamp' in data.columns and 'value' in data.columns:
+            st.success("Time-series data detected in the uploaded CSV file!")
+        else:
+            st.error("The uploaded CSV file does not contain the expected time-series columns.")
 
-    # Prepare data
-    X = data['value'].values.reshape(1, -1)
-    Y = np.zeros((1, len(X)))  # Initialize Y with zeros
+        # Use the uploaded data for analysis
+        X = data['value'].values.reshape(1, -1)
+        Y = np.zeros((1, len(X)))
+        Y[0, -100:] = 1  # Placeholder for the last 100 values, assuming the data has 4320 values
 
-    # Set Y for the last portion of the data as a placeholder for future health label
-    Y[0, -100:] = 1  # Placeholder for the last 100 values, assuming the data has 4320 values
+        # Train neural network
+        parameters = train_neural_network(X, Y, learning_rate=0.1, num_iterations=1000)
 
-    # Train neural network
-    parameters = train_neural_network(X, Y, learning_rate, num_iterations)
+        # Make predictions for the original data
+        predictions_original = predict(X, parameters)
 
-    # Make predictions for the original data
-    predictions_original = predict(X, parameters)
+        # Label data using threshold
+        data['health_label'] = np.where(predictions_original.flatten() > 0.5, 'Healthy', 'Unhealthy')
 
-    # Label data using threshold
-    data['health_label'] = np.where(predictions_original.flatten() > threshold, 'Healthy', 'Unhealthy')
+        # Plot original data with health labels
+        st.subheader("Original Data Plot with Health Labels")
+        fig = px.line(data, x='timestamp', y='value', color='health_label', labels={'value': 'Original Data'})
+        st.plotly_chart(fig)
 
-    # Plot original data with health labels
-    st.subheader("Original Data Plot with Health Labels")
-    fig = px.line(data, x='timestamp', y='value', color='health_label', labels={'value': 'Original Data'})
-    st.plotly_chart(fig)
+        # Performance Matrix and Explanations
+        st.subheader("Performance Matrix")
+        y_true = Y.flatten()
+        y_pred = predictions_original.flatten() > 0.5
+        cm = confusion_matrix(y_true, y_pred)
+        accuracy = accuracy_score(y_true, y_pred)
+        classification_rep = classification_report(y_true, y_pred)
 
-    # Generate random data for the fourth day
-    data_future = generate_random_data()
-
-    # Make predictions for the future data
-    X_future = data_future['value'].values.reshape(1, -1)
-    predictions_future = predict(X_future, parameters)
-
-    # Label future data using threshold
-    data_future['health_label'] = np.where(predictions_future.flatten() > threshold, 'Healthy', 'Unhealthy')
-
-    # Plot forecasted data with health labels
-    st.subheader("Forecasted Data Plot with Health Labels")
-    fig_future = px.line(data_future, x='timestamp', y='value', color='health_label', labels={'value': 'Forecasted Data'})
-    st.plotly_chart(fig_future)
+        st.write(f"Confusion Matrix:\n{cm}")
+        st.write(f"Accuracy: {accuracy}")
+        st.write(f"Classification Report:\n{classification_rep}")
 
 if __name__ == "__main__":
     main()
