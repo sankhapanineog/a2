@@ -93,10 +93,8 @@ def main():
 
     # Prepare data
     X = data['value'].values.reshape(1, -1)
-    Y = np.zeros((1, len(X)))  # Initialize Y with zeros
-
-    # Set Y for the last portion of the data as a placeholder for future health label
-    Y[0, -100:] = 1  # Placeholder for the last 100 values, assuming the data has 4320 values
+    # Use actual labels from the data instead of initializing Y with zeros
+    Y = (data['health_label'] == 'Healthy').astype(int).values.reshape(1, -1)
 
     # Train neural network
     parameters = train_neural_network(X, Y, learning_rate, num_iterations)
@@ -105,11 +103,11 @@ def main():
     predictions_original = predict(X, parameters)
 
     # Label data using threshold
-    data['health_label'] = np.where(predictions_original.flatten() > threshold, 'Healthy', 'Unhealthy')
+    data['predicted_health_label'] = np.where(predictions_original.flatten() > threshold, 'Healthy', 'Unhealthy')
 
-    # Plot original data with health labels
-    st.subheader("Data Plot with Health Labels")
-    fig = px.line(data, x='timestamp', y='value', color='health_label', labels={'value': 'Data'})
+    # Plot original data with predicted health labels
+    st.subheader("Data Plot with Predicted Health Labels")
+    fig = px.line(data, x='timestamp', y='value', color='predicted_health_label', labels={'value': 'Data'})
     st.plotly_chart(fig)
 
     # Performance Matrix and Explanations
