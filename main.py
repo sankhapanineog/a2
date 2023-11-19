@@ -92,9 +92,14 @@ def main():
     threshold = st.sidebar.slider("Threshold for Health Prediction", min_value=0.1, max_value=0.9, value=0.5, step=0.1)
 
     # Prepare data
+    if 'health_label' in data.columns:
+        # Use actual labels from the data
+        Y = (data['health_label'] == 'Healthy').astype(int).values.reshape(1, -1)
+    else:
+        # If 'health_label' is not present, create placeholder labels
+        Y = np.zeros((1, len(data)))
+
     X = data['value'].values.reshape(1, -1)
-    # Use actual labels from the data instead of initializing Y with zeros
-    Y = (data['health_label'] == 'Healthy').astype(int).values.reshape(1, -1)
 
     # Train neural network
     parameters = train_neural_network(X, Y, learning_rate, num_iterations)
@@ -111,6 +116,7 @@ def main():
     st.plotly_chart(fig)
 
     # Performance Matrix and Explanations
+
     st.subheader("Performance Matrix")
     y_true = Y.flatten()
     y_pred = predictions_original.flatten() > threshold
