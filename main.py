@@ -69,47 +69,60 @@ def generate_random_data():
 def main():
     st.title("Group 7: Neural Network Asset Health Prediction App")
 
-    # Option for CSV Upload
-    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+    # Option to Generate Random Data or Upload CSV
+    data_option = st.radio("Choose Data Source:", ("Generate Random Data", "Upload CSV"))
 
-    if uploaded_file is not None:
-        # Auto-detect if the uploaded CSV file contains time-series data
-        data = pd.read_csv(uploaded_file)
-        if 'timestamp' in data.columns and 'value' in data.columns:
-            st.success("Time-series data detected in the uploaded CSV file!")
+    if data_option == "Generate Random Data":
+        # Generate random data for three days
+        data = generate_random_data()
+    else:
+        # Upload CSV file
+        uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+
+        if uploaded_file is not None:
+            data = pd.read_csv(uploaded_file)
         else:
-            st.error("The uploaded CSV file does not contain the expected time-series columns.")
+            st.warning("Please upload a CSV file or choose to generate random data.")
+            return
 
-        # Use the uploaded data for analysis
-        X = data['value'].values.reshape(1, -1)
-        Y = np.zeros((1, len(X)))
-        Y[0, -100:] = 1  # Placeholder for the last 100 values, assuming the data has 4320 values
+    # Sidebar - Neural Network Configuration
+    st.sidebar.header("Neural Network Configuration")
+    learning_rate = st.sidebar.slider("Learning Rate", min_value=0.01, max_value=0.5, value=0.1, step=0.01)
+    num_iterations = st.sidebar.slider("Number of Iterations", min_value=100, max_value=5000, value=1000, step=100)
+    threshold = st.sidebar.slider("Threshold for Health Prediction", min_value=0.1, max_value=0.9, value=0.5, step=0.1)
 
-        # Train neural network
-        parameters = train_neural_network(X, Y, learning_rate=0.1, num_iterations=1000)
+    # Prepare data
+    X = data['value'].values.reshape(1, -1)
+    Y = np.zeros((1, len(X)))  # Initialize Y with zeros
 
-        # Make predictions for the original data
-        predictions_original = predict(X, parameters)
+    # Set Y for the last portion of the data as a placeholder for future health label
+    Y[0, -100:] = 1  # Placeholder for the last 100 values, assuming the data has 4320 values
 
-        # Label data using threshold
-        data['health_label'] = np.where(predictions_original.flatten() > 0.5, 'Healthy', 'Unhealthy')
+    # Train neural network
+    parameters = train_neural_network(X, Y, learning_rate, num_iterations)
 
-        # Plot original data with health labels
-        st.subheader("Original Data Plot with Health Labels")
-        fig = px.line(data, x='timestamp', y='value', color='health_label', labels={'value': 'Original Data'})
-        st.plotly_chart(fig)
+    # Make predictions for the original data
+    predictions_original = predict(X, parameters)
 
-        # Performance Matrix and Explanations
-        st.subheader("Performance Matrix")
-        y_true = Y.flatten()
-        y_pred = predictions_original.flatten() > 0.5
-        cm = confusion_matrix(y_true, y_pred)
-        accuracy = accuracy_score(y_true, y_pred)
-        classification_rep = classification_report(y_true, y_pred)
+    # Label data using threshold
+    data['health_label'] = np.where(predictions_original.flatten() > threshold, 'Healthy', 'Unhealthy')
 
-        st.write(f"Confusion Matrix:\n{cm}")
-        st.write(f"Accuracy: {accuracy}")
-        st.write(f"Classification Report:\n{classification_rep}")
+    # Plot original data with health labels
+    st.subheader("Data Plot with Health Labels")
+    fig = px.line(data, x='timestamp', y='value', color='health_label', labels={'value': 'Data'})
+    st.plotly_chart(fig)
+
+    # Performance Matrix and Explanations
+    st.subheader("Performance Matrix")
+    y_true = Y.flatten()
+    y_pred = predictions_original.flatten() > threshold
+    cm = confusion_matrix(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred)
+    classification_rep = classification_report(y_true, y_pred)
+
+    st.write(f"Confusion Matrix:\n{cm}")
+    st.write(f"Accuracy: {accuracy}")
+    st.write(f"Classification Report:\n{classification_rep}")
 
 if __name__ == "__main__":
     main()
