@@ -79,7 +79,7 @@ def generate_random_data():
 
 # Streamlit app
 def main():
-    st.title("Group 7: Neural Network Asset Health Prediction App")
+    st.title("Neural Network based Asset Health Prediction ")
 
     # Option to Generate Random Data or Upload CSV
     data_option = st.radio("Choose Data Source:", ("Generate Random Data", "Upload CSV"))
@@ -132,31 +132,32 @@ def main():
 
     # Confusion Matrix, Accuracy, and Classification Report
     y_true = Y.flatten()
-    y_pred = predictions_original.flatten() > threshold
+    y_pred = (predictions_original.flatten() > threshold).astype(int)
     cm = confusion_matrix(y_true, y_pred)
     accuracy = accuracy_score(y_true, y_pred)
     classification_rep = classification_report(y_true, y_pred)
 
-    st.write(f"Confusion Matrix:\n{cm}")
-    st.write(f"Accuracy: {accuracy}")
-    st.write(f"Classification Report:\n{classification_rep}")
+    # Display the Confusion Matrix
+    st.markdown("### Confusion Matrix")
+    st.write(pd.DataFrame(cm, columns=['Predicted'], index=['Actual']))
+
+    # Display Accuracy and Classification Report
+    st.markdown(f"*Accuracy:* {accuracy:.2%}")
+    st.markdown("### Classification Report")
+    st.write(classification_rep)
 
     # Explain the advantages of AI-based asset health forecasting
-    st.subheader("Advantages of AI-based Asset Health Forecasting:")
-    st.write("1. **Early Detection:** AI models can detect subtle patterns indicative of asset degradation before"
+    st.subheader(" ")
+    st.write(" *Early Detection:* AI models can detect subtle patterns indicative of asset degradation before"
              " visible signs appear, allowing for early intervention and maintenance.")
 
-    st.write("2. **Data-Driven Insights:** AI algorithms analyze large datasets, providing data-driven insights into"
-             " asset performance and health based on historical patterns and real-time data.")
+    st.write("Embark on a transformative journey towards proactive asset management with our cutting-edge Neural Network-based Asset Health Prediction software. Secure your spot in our early registration and be among the pioneers leveraging the power of artificial intelligence for asset forecasting. ")
 
-    st.write("3. **Predictive Maintenance:** AI can predict when equipment is likely to fail, enabling proactive"
-             " maintenance schedules and minimizing downtime.")
+    st.write(" For collaboration mail us at neogsankhapani@gmail.com ")
 
-    st.write("4. **Cost Savings:** Predictive maintenance and early detection of issues lead to cost savings by"
-             " preventing major breakdowns and reducing unplanned downtime.")
+    st.write(" ")
 
-    st.write("5. **Continuous Improvement:** AI models can be continually trained and improved with new data, adapting"
-             " to changing conditions and improving accuracy over time.")
+    st.write(" .")
 
 if __name__ == "__main__":
     main()
