@@ -79,7 +79,7 @@ def generate_random_data():
 
 # Streamlit app
 def main():
-    st.title("Early registration now open for custom development \n #Predictive_maintenance_system \n Mail id: neogsankhapani@gmail.com")
+    st.title("Early registration now open for custom development \nAI BASED MAINTENANCE SOLUTIONS\n Mail id: neogsankhapani@gmail.com")
 
     # Option to Generate Random Data or Upload CSV
     data_option = st.radio("Choose Data Source:", ("Generate Random Data", "Upload CSV"))
