@@ -147,7 +147,7 @@ def main():
     st.write(classification_rep)
 
     # Explain the advantages of AI-based asset health forecasting
-    st.subheader(" ")
+    st.header("Lets Collaborate ")
     st.write(" *Early Detection:* AI models can detect subtle patterns indicative of asset degradation before"
              " visible signs appear, allowing for early intervention and maintenance.")
 
